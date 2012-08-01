@@ -1,0 +1,16 @@
+{ "name": "bulk-hogan"
+, "version": "0.1.0"
+
+, "engines": { "node": ">=0.6" }
+, "main": "bulk_hogan.coffee"
+
+, "dependencies":
+  { "coffee-script": "~1.2.0"
+  , "async": "~0.1.18"
+  , "glob": "~3.1.9"
+  , "hogan": "~1.0.5-dev"
+  }
+
+, "devDependencies":
+  { "fs-extra": "~0.1.1" }
+}
