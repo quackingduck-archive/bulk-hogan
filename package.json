@@ -2,15 +2,16 @@
 , "version": "0.1.0"
 
 , "engines": { "node": ">=0.6" }
-, "main": "bulk_hogan.coffee"
+, "main": "lib/bulk_hogan.js"
 
 , "dependencies":
-  { "coffee-script": "~1.2.0"
-  , "async": "~0.1.18"
+  { "async": "~0.1.18"
   , "glob": "~3.1.9"
   , "hogan": "~1.0.5-dev"
   }
 
 , "devDependencies":
-  { "fs-extra": "~0.1.1" }
+  { "coffee-script": "~1.2.0"
+  ,"fs-extra": "~0.1.1"
+  }
 }
