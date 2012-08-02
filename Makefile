@@ -10,7 +10,7 @@ lib/%.js : src/%.coffee
 		--output lib $<
 
 test :
-	coffee src/bulk_hogan
+	./node_modules/.bin/coffee src/bulk_hogan
 
 # ---
 
