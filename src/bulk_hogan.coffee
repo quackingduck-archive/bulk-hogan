@@ -54,6 +54,12 @@ templates.render = (name, view, cb) ->
     catch err
       cb err
 
+templates.renderSync = (name, view) ->
+  throw new Error 'Template files have not been loaded' unless @cache?
+  compiledTemplate = @cache[name]
+  throw new Error "No template named: #{name}" unless compiledTemplate?
+  compiledTemplate.render view, @cache
+
 templates.load = (cb) ->
   return cb(noErr, @cache) if @cache?
   async.parallel
