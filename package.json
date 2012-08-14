@@ -5,6 +5,8 @@
 , "description": "Produces html from some view object by rendering it via some mustache implementation."
 , "version": "0.2.0-dev"
 
+, "license": "MIT"
+
 , "homepage": "https://github.com/quackingduck/bulk-hogan"
 
 , "engines": { "node": ">=0.6" }
