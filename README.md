@@ -19,5 +19,4 @@ templates.render 'footer_links', {} (err, html) ->
 ````
 
 This is an early beta release. Use at your own risk etc.
-                                  ---
 
