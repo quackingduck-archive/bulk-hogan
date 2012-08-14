@@ -1,8 +1,19 @@
-{ "name": "bulk-hogan"
+{
+  "author" : "Myles Byrne <myles@myles.id.au>"
+
+, "name": "bulk-hogan"
+, "description": "Produces html from some view object by rendering it via some mustache implementation."
 , "version": "0.2.0-dev"
+
+, "homepage": "https://github.com/quackingduck/bulk-hogan"
 
 , "engines": { "node": ">=0.6" }
 , "main": "lib/bulk_hogan.js"
+
+, "repository": {
+    "type": "git"
+  , "url": "https://github.com/quackingduck/bulk-hogan.git"
+  }
 
 , "dependencies":
   { "async": "~0.1.18"
