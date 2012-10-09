@@ -37,7 +37,7 @@
 #
 
 fs    = require 'fs'
-hogan = require 'hogan'
+hogan = require 'hogan.js'
 async = require 'async'
 glob  = require 'glob'
 
