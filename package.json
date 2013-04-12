@@ -3,7 +3,7 @@
 
 , "name": "bulk-hogan"
 , "description": "Produces html from some view object by rendering it via some mustache implementation."
-, "version": "0.3.0-dev"
+, "version": "0.3.0"
 
 , "license": "MIT"
 
