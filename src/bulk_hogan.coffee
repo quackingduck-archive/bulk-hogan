@@ -35,6 +35,17 @@
 #     templates.render 'deal', ...        # renders /modules/deal/main.html.mustache
 #     templates.render 'deal_detail', ... # renders /modules/deal/detail.html.mustache
 #
+#
+# You can also get the source of a template by calling
+#
+#     # one template
+#     templates.source 'deal', (err, mustache) ->
+#       mustache == "{{deal..."
+#
+#     # all template
+#     templates.source '*', (err, mustache) ->
+#       mustache.deal == "{{deal..."
+#
 
 fs    = require 'fs'
 hogan = require 'hogan.js'
@@ -43,8 +54,17 @@ glob  = require 'glob'
 
 module.exports = templates = {}
 
+templates.source = (name, cb) ->
+  @load (err, compiledTemplates, sourceTemplates) ->
+    return cb(err) if err?
+    return cb noErr, sourceTemplates if name is '*'
+    sourceTemplate = sourceTemplates[name]
+    return cb(new Error "No template named: #{name}") unless sourceTemplate?
+    cb noErr, sourceTemplate
+
+
 templates.render = (name, view, cb) ->
-  @load (err, compiledTemplates) ->
+  @load (err, compiledTemplates, sourceTemplates) ->
     return cb(err) if err?
     compiledTemplate = compiledTemplates[name]
     return cb(new Error "No template named: #{name}") unless compiledTemplate?
@@ -55,13 +75,13 @@ templates.render = (name, view, cb) ->
       cb err
 
 templates.renderSync = (name, view) ->
-  throw new Error 'Template files have not been loaded' unless @cache?
-  compiledTemplate = @cache[name]
+  throw new Error 'Template files have not been loaded' unless @compiledCache?
+  compiledTemplate = @compiledCache[name]
   throw new Error "No template named: #{name}" unless compiledTemplate?
-  compiledTemplate.render view, @cache
+  compiledTemplate.render view, @compiledCache
 
 templates.load = (cb) ->
-  return cb(noErr, @cache) if @cache?
+  return cb(noErr, @compiledCache, @sourceCache) if @compiledCache?
   async.parallel
     templates: (cb) =>
       readAndCompileTemplates @dir,  '*.mustache', basenameWithoutExtension, cb
@@ -71,16 +91,26 @@ templates.load = (cb) ->
   , (err, results) =>
     return cb(err) if err?
     compiledTemplates = {}
-    compiledTemplates[k] = v for k,v of results.templates
-    compiledTemplates[k] = v for k,v of results.moduleTemplates
-    @cache = compiledTemplates unless @reload
-    cb noErr, compiledTemplates
+    sourceTemplates = {}
+
+    compiledTemplates[k] = v for k,v of results.templates.compiledTemplates
+    compiledTemplates[k] = v for k,v of results.moduleTemplates.compiledTemplates
+    sourceTemplates[k] = v for k,v of results.templates.sourceTemplates
+    sourceTemplates[k] = v for k,v of results.moduleTemplates.sourceTemplates
+
+    @compiledCache = compiledTemplates unless @reload
+    @sourceCache = sourceTemplates unless @reload
+
+    cb noErr, compiledTemplates, sourceTemplates
 
 # Where to look for template files
 templates.dir = __dirname + '/templates'
 
+# Memory location used to store the uncompiled templates
+templates.sourceCache = null
+
 # Memory location used to store the compiled templates
-templates.cache = null
+templates.compiledCache = null
 
 # When `reload` is true, *all* templates are re-read from disk then
 # re-compiled every time render is called. You only ever want this behavior
@@ -101,14 +131,18 @@ readAndCompileTemplates = (dir, globFilter, nameFromFilenameFn, cb) ->
         cb err, fileNames, fileContents
   ], (err, fileNames, fileContents) ->
     return cb(err) if err?
-    compiledTemplates = {}
+    result =
+      compiledTemplates: {}
+      sourceTemplates: {}
+
     for fileName, i in fileNames
       # extract template name
       name = nameFromFilenameFn fileName
       # compile template
-      compiledTemplates[name] = hogan.compile fileContents[i].toString 'utf8'
+      result.compiledTemplates[name] = hogan.compile fileContents[i].toString 'utf8'
+      result.sourceTemplates[name] = fileContents[i].toString 'utf8'
     # return hashmap of template names and compiled contents
-    cb noErr, compiledTemplates
+    cb noErr, result
 
 # An aesthetic tweak, `cb(noErr)` reveals more intent than `cb(null)`
 noErr = null
@@ -172,6 +206,18 @@ if process.argv[1] is __filename
       view = { foo: 'a', bar: 'b' }
       templates.render 'partials', view, resultEquals('ab', next)
 
+    # Get one template's source
+    (next) ->
+      templates.source 'foo', resultEquals(sources.foo, next)
+
+    # Get all templates' source
+    (next) ->
+      templates.source '*', (err, sources) ->
+        assert.equal typeof sources, 'object'
+        assert.equal sources.foo, "{{foo}}"
+        next()
+
+
   ], (err) ->
     assert.ifError err
 
@@ -189,11 +235,15 @@ if process.argv[1] is __filename
     for name, contents of bazModuleSources
       fse.writeFileSync "#{bazModuleDir}/#{name}.html.mustache", contents, 'utf8'
 
-    templates.cache = null # reset cache, force reload
+    templates.compiledCache = null # reset cache, force reload
+    templates.sourceCache = null
 
     templates.render 'baz', {}, (err, html) ->
       assert.ifError err
       assert.equal "contents of baz_qux module template", html
+      assert.equal "contents of baz_qux module template", templates.sourceCache['baz_qux']
+      assert.equal "{{>baz_qux}}", templates.sourceCache['baz']
+
 
       console.log "ok"
       process.exit()
