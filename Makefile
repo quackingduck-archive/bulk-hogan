@@ -10,9 +10,9 @@ lib/%.js : src/%.coffee
 		--output lib $<
 
 test :
-	./node_modules/.bin/coffee src/bulk_hogan
+	./node_modules/.bin/coffee src/bulk_hogan.coffee
 
 # ---
 
 tag:
-	git tag v`coffee -e "console.log JSON.parse(require('fs').readFileSync 'package.json').version"`
+	git tag v`node -e "console.log(require('./package.json').version)"`
