@@ -67,7 +67,7 @@ templates.load = (cb) ->
       readAndCompileTemplates @dir,  '*.mustache', basenameWithoutExtension, cb
     moduleTemplates: (cb) =>
       return cb(noErr, {}) unless @modulesDir?
-      readAndCompileTemplates @modulesDir,  '*/*.mustache', modulePrefixedBasenameWithoutExtension, cb
+      readAndCompileTemplates @modulesDir,  '**/*.mustache', modulePrefixedBasenameWithoutExtension, cb
   , (err, results) =>
     return cb(err) if err?
     compiledTemplates = {}
